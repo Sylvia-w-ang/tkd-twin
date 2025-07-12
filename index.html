@@ -1,58 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taekwondo Twin</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 2rem;
-      background-color: #f0f0f0;
-    }
-    video {
-      width: 480px;
-      height: 360px;
-      border: 2px solid #333;
-      border-radius: 10px;
-      background: #000;
-    }
-    #status {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-    }
-    #error {
-      margin-top: 0.5rem;
-      color: red;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Camera Test</title>
 </head>
 <body>
-  <h1>👊 Taekwondo Twin MVP</h1>
-  <video id="video" autoplay playsinline muted></video>
-  <div id="status">Initializing camera...</div>
-  <div id="error"></div>
+  <h1>Camera Test Page</h1>
+  <video id="video" width="640" height="480" autoplay playsinline></video>
+  <p id="status">Starting camera...</p>
+  <p id="error" style="color: red;"></p>
 
   <script>
-    const video = document.getElementById('video');
-    const status = document.getElementById('status');
-    const error = document.getElementById('error');
+    const video = document.getElementById("video");
+    const status = document.getElementById("status");
+    const error = document.getElementById("error");
 
-    async function initCamera() {
+    async function startCamera() {
       try {
+        status.textContent = "Requesting camera access...";
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
-        status.textContent = "✅ Camera is active.";
+        status.textContent = "✅ Camera started.";
       } catch (err) {
         console.error("Camera error:", err);
-        status.textContent = "❌ Camera failed to initialize.";
-        error.textContent = err.message || "Unknown error.";
+        status.textContent = "❌ Camera failed.";
+        error.textContent = err.message;
       }
     }
 
-    initCamera();
+    startCamera();
   </script>
 </body>
 </html>
