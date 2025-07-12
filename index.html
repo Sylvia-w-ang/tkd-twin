@@ -3,38 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taekwondo Digital Twin (MVP)</title>
+  <title>Taekwondo Twin</title>
   <style>
     body {
       font-family: sans-serif;
-      margin: 0;
-      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #f0f0f0;
+      padding: 2rem;
+      background: #f8f8f8;
     }
     video {
       width: 480px;
       height: 360px;
       border: 2px solid #333;
-      border-radius: 8px;
+      border-radius: 10px;
       background: black;
     }
     #status {
       margin-top: 1rem;
       font-size: 1.1rem;
-      color: #444;
     }
     #error {
-      margin-top: 1rem;
       color: red;
-      font-weight: bold;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <h1>👊 Taekwondo Digital Twin MVP</h1>
+  <h1>👊 Taekwondo Twin MVP</h1>
   <video id="video" autoplay playsinline></video>
   <div id="status">Initializing camera...</div>
   <div id="error"></div>
@@ -44,26 +41,19 @@
     const status = document.getElementById('status');
     const error = document.getElementById('error');
 
-    // Check camera support
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      error.textContent = '❌ Your browser does not support camera access.';
-      status.textContent = 'Unsupported browser.';
-    } else {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then((stream) => {
-          video.srcObject = stream;
-          status.textContent = '✅ Camera initialized. Ready to go!';
-        })
-        .catch((err) => {
-          console.error('Camera error:', err);
-          if (err.name === 'NotAllowedError') {
-            error.textContent = '❌ Camera access was denied. Please allow camera permissions.';
-          } else {
-            error.textContent = '❌ Failed to access camera: ' + err.message;
-          }
-          status.textContent = 'Error initializing camera.';
-        });
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        status.textContent = "✅ Camera ready!";
+      } catch (err) {
+        console.error("Camera error:", err);
+        error.textContent = "❌ " + (err.message || "Camera access failed.");
+        status.textContent = "Camera initialization failed.";
+      }
     }
+
+    initCamera();
   </script>
 </body>
 </html>
