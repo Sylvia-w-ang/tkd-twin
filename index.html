@@ -3,132 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Poomsae Punch Analyzer</title>
+  <title>Taekwondo Digital Twin (MVP)</title>
   <style>
     body {
-      margin: 0;
       font-family: sans-serif;
-      background: #121212;
-      color: white;
-      text-align: center;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f0f0f0;
     }
-    #video, #canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
+    video {
+      width: 480px;
+      height: 360px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: black;
     }
-    #feedback {
-      position: absolute;
-      bottom: 40px;
-      left: 0;
-      width: 100%;
-      font-size: 1.5rem;
+    #status {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: #444;
+    }
+    #error {
+      margin-top: 1rem;
+      color: red;
       font-weight: bold;
-      background: rgba(0,0,0,0.5);
-      padding: 10px 0;
     }
   </style>
 </head>
 <body>
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas"></canvas>
-  <div id="feedback">Initializing...</div>
-
-  <!-- TensorFlow + Pose Detection -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.8.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.7"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+  <h1>👊 Taekwondo Digital Twin MVP</h1>
+  <video id="video" autoplay playsinline></video>
+  <div id="status">Initializing camera...</div>
+  <div id="error"></div>
 
   <script>
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const feedback = document.getElementById("feedback");
+    const video = document.getElementById('video');
+    const status = document.getElementById('status');
+    const error = document.getElementById('error');
 
-    async function setupCamera() {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-        audio: false,
-      });
-      video.srcObject = stream;
-      return new Promise(resolve => {
-        video.onloadedmetadata = () => {
-          resolve(video);
-        };
-      });
-    }
-
-    async function main() {
-      await setupCamera();
-      video.play();
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      const detector = await poseDetection.createDetector(
-        poseDetection.SupportedModels.BlazePose,
-        {
-          runtime: "tfjs",
-          modelType: "full",
-        }
-      );
-
-      async function render() {
-        const poses = await detector.estimatePoses(video);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        if (poses.length > 0) {
-          const keypoints = poses[0].keypoints;
-          const kp = {};
-          for (const point of keypoints) {
-            kp[point.name] = point;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "lime";
-            ctx.fill();
-          }
-
-          const getAngle = (a, b, c) => {
-            const ab = [a.x - b.x, a.y - b.y];
-            const cb = [c.x - b.x, c.y - b.y];
-            const dot = ab[0]*cb[0] + ab[1]*cb[1];
-            const abMag = Math.sqrt(ab[0]**2 + ab[1]**2);
-            const cbMag = Math.sqrt(cb[0]**2 + cb[1]**2);
-            const angleRad = Math.acos(dot / (abMag * cbMag));
-            return (angleRad * 180) / Math.PI;
-          };
-
-          const rightElbowAngle = getAngle(kp["right_shoulder"], kp["right_elbow"], kp["right_wrist"]);
-          const leftElbowAngle = getAngle(kp["left_shoulder"], kp["left_elbow"], kp["left_wrist"]);
-
-          let punchDetected = false;
-          let message = "";
-
-          if (rightElbowAngle > 160) {
-            punchDetected = true;
-            message = "Right punch looks strong 💥";
-          } else if (leftElbowAngle > 160) {
-            punchDetected = true;
-            message = "Left punch looks strong 💥";
+    // Check camera support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      error.textContent = '❌ Your browser does not support camera access.';
+      status.textContent = 'Unsupported browser.';
+    } else {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          video.srcObject = stream;
+          status.textContent = '✅ Camera initialized. Ready to go!';
+        })
+        .catch((err) => {
+          console.error('Camera error:', err);
+          if (err.name === 'NotAllowedError') {
+            error.textContent = '❌ Camera access was denied. Please allow camera permissions.';
           } else {
-            message = "Try extending your punch more!";
+            error.textContent = '❌ Failed to access camera: ' + err.message;
           }
-
-          feedback.textContent = message;
-        } else {
-          feedback.textContent = "No person detected";
-        }
-
-        requestAnimationFrame(render);
-      }
-
-      render();
+          status.textContent = 'Error initializing camera.';
+        });
     }
-
-    main();
   </script>
 </body>
 </html>
