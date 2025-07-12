@@ -6,33 +6,32 @@
   <title>Taekwondo Twin</title>
   <style>
     body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
       padding: 2rem;
-      background: #f8f8f8;
+      background-color: #f0f0f0;
     }
     video {
       width: 480px;
       height: 360px;
       border: 2px solid #333;
       border-radius: 10px;
-      background: black;
+      background: #000;
     }
     #status {
       margin-top: 1rem;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
     }
     #error {
-      color: red;
       margin-top: 0.5rem;
+      color: red;
     }
   </style>
 </head>
 <body>
   <h1>👊 Taekwondo Twin MVP</h1>
-  <video id="video" autoplay playsinline></video>
+  <video id="video" autoplay playsinline muted></video>
   <div id="status">Initializing camera...</div>
   <div id="error"></div>
 
@@ -45,11 +44,11 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
-        status.textContent = "✅ Camera ready!";
+        status.textContent = "✅ Camera is active.";
       } catch (err) {
         console.error("Camera error:", err);
-        error.textContent = "❌ " + (err.message || "Camera access failed.");
-        status.textContent = "Camera initialization failed.";
+        status.textContent = "❌ Camera failed to initialize.";
+        error.textContent = err.message || "Unknown error.";
       }
     }
 
